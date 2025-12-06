@@ -1,3 +1,8 @@
 ReversePolishNotation {
-    // write rules here
+	Expr 
+  		= Expr Expr "+" -- plus
+  		| Expr Expr "*" -- mult
+        | num
+    
+    num = digit+
 }
