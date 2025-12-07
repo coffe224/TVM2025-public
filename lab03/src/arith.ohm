@@ -1,3 +1,17 @@
 Arithmetic {
-    // write rules here
+    Expr = AddExpr
+    
+    AddExpr = MulExpr (("+" | "-") MulExpr)*
+    
+    MulExpr = AtomExpr (("*" | "/")  AtomExpr)*
+    
+    AtomExpr = NegExpr | BracExpr | variable | num
+    
+    NegExpr = "-" Expr
+    
+    BracExpr = "(" Expr ")"
+    
+    variable = letter alnum*
+    
+    num = digit+
 }
