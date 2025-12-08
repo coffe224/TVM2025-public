@@ -1,18 +1,21 @@
 export type Expr 
-    = AddExpr 
-    | MulExpr 
+    = NryExpr
     | AtomExpr; 
+
+export type NryExpr
+    = AddExpr
+    | MulExpr;
 
 export interface AddExpr {
     type: 'add_op',
     ops: string[],
-    args: MulExpr[]
+    args: Expr[]
 }
 
 export interface MulExpr {
     type: 'mul_op',
     ops: string[],
-    args: AtomExpr[]
+    args: Expr[]
 }
 
 export type AtomExpr
