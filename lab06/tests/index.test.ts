@@ -5,7 +5,14 @@ import { compileAndExecute, getVariables } from "../../lab05";
 
 import { derive } from "../src";
 
-const parseAndDerive = (source: string, varName: string) => derive(parseExpr(source), varName);
+// const parseAndDerive = (source: string, varName: string) => derive(parseExpr(source), varName);
+
+const parseAndDerive = (source: string, varName: string) => {
+  const parsedExpr = parseExpr(source);
+  const derivedExpr = derive(parsedExpr, varName);
+  console.log(printExpr(derivedExpr));
+  return derivedExpr;
+};
 
 
 describe("Numerical tests", ()=>{
