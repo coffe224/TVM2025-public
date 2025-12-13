@@ -1,34 +1,85 @@
 import { Expr } from "./ast";
 
-
-
-export function printExpr(e: Expr):string
+export function printExpr(e: Expr, parent_type?: Expr['type'], is_right_arg?: boolean):string
 {
+    let result : string = "";
     switch (e.type) {
-        case 'add_op':
-            let addResult = printExpr(e.args[0]);
-            for (let i = 1; i < e.args.length; i++) {
-                addResult += ` ${e.ops[i - 1]} ${printExpr(e.args[i])}`;
-            }
-            return addResult;
-            
         case 'mul_op':
-            let mulResult = printExpr(e.args[0]);
-            for (let i = 1; i < e.args.length; i++) {
-                mulResult += ` ${e.ops[i - 1]} ${printExpr(e.args[i])}`;
-            }
-            return mulResult;
+        case 'add_op':
+        case 'div_op':
+        case 'sub_op':
+            result = `${printExpr(e.left_arg, e.type, false)} ${e.op} ${printExpr(e.right_arg, e.type, true)}`;
+            break;
             
         case 'unary_min':
-            return `-${printExpr(e.arg)}`;
-            
-        case 'brac_expr':
-            return `(${printExpr(e.arg)})`;
+            result = `-${printExpr(e.arg, e.type)}`;
+            break;
             
         case 'variable':
-            return e.value;
+            result = e.value;
+            break;
             
         case 'number':
-            return e.value.toString();
+            result = e.value.toString();
+            break;
+    }
+
+    if (isParenthesisNeeded(e.type, parent_type, is_right_arg)) {
+        return `(${result})`;
+    }
+    return result;
+}
+
+function isParenthesisNeeded(type: Expr['type'], parent_type?: Expr['type'], is_right_arg?: boolean): boolean {
+    switch (type) {
+        case 'variable':
+        case 'number':
+        case 'unary_min':
+            return false;
+
+        case 'add_op':
+        case 'mul_op':
+        case 'div_op':
+        case 'sub_op':
+            if (!parent_type) {
+                return false;
+            }
+
+            const precedence = getPrecedence(type);
+            const parent_precedence = getPrecedence(parent_type);
+            
+            if (parent_precedence > precedence) {
+                return true;
+            }
+
+            if (parent_precedence < precedence) {
+                return false
+            }
+
+            if (parent_type == 'sub_op' && is_right_arg) {
+                return true;
+            } 
+
+            if (parent_type == 'div_op' && is_right_arg) {
+                return true;
+            }
+
+            return false;
+    }
+}
+
+function getPrecedence(type: Expr['type']): number {
+    switch (type) {
+        case 'unary_min':
+            return 3;
+        case 'mul_op':
+        case 'div_op':
+            return 2;
+        case 'add_op':
+        case 'sub_op':
+            return 1;
+        case 'variable':
+        case 'number':
+            return 0;
     }
 }

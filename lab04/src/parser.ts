@@ -1,6 +1,6 @@
 import { MatchResult } from 'ohm-js';
 import { arithGrammar, ArithmeticActionDict, ArithmeticSemantics, SyntaxError } from '../../lab03';
-import { AddExpr, BracExpr, Expr, MulExpr, NegExpr, Num, Variable } from './ast';
+import { AddExpr, Expr, MulExpr, NegExpr, Num, Variable } from './ast';
 
 export const getExprAst: ArithmeticActionDict<Expr> = {
     Expr(expr) {
@@ -9,43 +9,57 @@ export const getExprAst: ArithmeticActionDict<Expr> = {
     },
 
     AddExpr(expr, it1, it2) {
-        const add_expr : AddExpr = {type: 'add_op', ops: [], args: []};
-        add_expr.args.push(expr.parse());
-
         const ops = it1.children;
         const args = it2.children;
 
+        let cur_expr : Expr = expr.parse();
+
         for (let i = 0; i < ops.length; i++) {
+            const right_expr : Expr = args[i].parse();
             if (ops[i].sourceString == "+") {
-                add_expr.ops.push("+");
+                cur_expr = {
+                    type: 'add_op', 
+                    op: '+', 
+                    left_arg: cur_expr, 
+                    right_arg: right_expr}
             } else if (ops[i].sourceString == "-") {
-                add_expr.ops.push("-");
+                cur_expr = {
+                    type: 'sub_op',
+                    op: '-', 
+                    left_arg: cur_expr, 
+                    right_arg: right_expr}
             } else {
                 throw Error;
             }
-            add_expr.args.push(args[i].parse());
         }
-        return add_expr;
+        return cur_expr;
     },
 
     MulExpr(expr, it1, it2) {
-        const mul_expr : MulExpr = {type: 'mul_op', ops: [], args: []};
-        mul_expr.args.push(expr.parse());
-
         const ops = it1.children;
         const args = it2.children;
 
+        let cur_expr : Expr = expr.parse();
+
         for (let i = 0; i < ops.length; i++) {
+            const right_expr : Expr = args[i].parse();
             if (ops[i].sourceString == "*") {
-                mul_expr.ops.push("*");
+                cur_expr = {
+                    type: 'mul_op', 
+                    op: '*', 
+                    left_arg: cur_expr, 
+                    right_arg: right_expr}
             } else if (ops[i].sourceString == "/") {
-                mul_expr.ops.push("/");
+                cur_expr = {
+                    type: 'div_op', 
+                    op: '/', 
+                    left_arg: cur_expr, 
+                    right_arg: right_expr}
             } else {
                 throw Error;
             }
-            mul_expr.args.push(args[i].parse());
         }
-        return mul_expr;
+        return cur_expr;
     },
 
     AtomExpr(expr) {
@@ -58,8 +72,7 @@ export const getExprAst: ArithmeticActionDict<Expr> = {
     },
 
     BracExpr(_, expr, __) {
-        const brac_expr : BracExpr = {type: 'brac_expr', arg: expr.parse()}
-        return brac_expr;
+        return expr.parse();
     },
 
     variable(_, __) {

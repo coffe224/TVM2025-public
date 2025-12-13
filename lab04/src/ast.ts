@@ -1,36 +1,48 @@
 export type Expr 
-    = NryExpr
+    = BinExpr
     | AtomExpr; 
 
-export type NryExpr
+export type BinExpr
     = AddExpr
-    | MulExpr;
+    | SubExpr
+    | MulExpr
+    | DivExpr
 
 export interface AddExpr {
     type: 'add_op',
-    ops: string[],
-    args: Expr[]
+    op: '+'
+    left_arg: Expr,
+    right_arg: Expr,
+}
+
+export interface SubExpr {
+    type: 'sub_op',
+    op: '-'
+    left_arg: Expr,
+    right_arg: Expr,
 }
 
 export interface MulExpr {
     type: 'mul_op',
-    ops: string[],
-    args: Expr[]
+    op: '*'
+    left_arg: Expr,
+    right_arg: Expr,
+}
+
+export interface DivExpr {
+    type: 'div_op',
+    op: '/'
+    left_arg: Expr,
+    right_arg: Expr,
 }
 
 export type AtomExpr
     = NegExpr
-    | BracExpr
     | Variable
     | Num
 
 export interface NegExpr {
     type: 'unary_min',
-    arg: Expr
-}
-
-export interface BracExpr {
-    type: 'brac_expr',
     arg: Expr
 }
 
