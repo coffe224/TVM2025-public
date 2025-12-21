@@ -10,28 +10,24 @@ export type BinExpr
 
 export interface AddExpr {
     type: 'add_op',
-    op: '+'
     left_arg: Expr,
     right_arg: Expr,
 }
 
 export interface SubExpr {
     type: 'sub_op',
-    op: '-'
     left_arg: Expr,
     right_arg: Expr,
 }
 
 export interface MulExpr {
     type: 'mul_op',
-    op: '*'
     left_arg: Expr,
     right_arg: Expr,
 }
 
 export interface DivExpr {
     type: 'div_op',
-    op: '/'
     left_arg: Expr,
     right_arg: Expr,
 }

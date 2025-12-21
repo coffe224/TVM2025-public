@@ -19,13 +19,11 @@ export const getExprAst: ArithmeticActionDict<Expr> = {
             if (ops[i].sourceString == "+") {
                 cur_expr = {
                     type: 'add_op', 
-                    op: '+', 
                     left_arg: cur_expr, 
                     right_arg: right_expr}
             } else if (ops[i].sourceString == "-") {
                 cur_expr = {
                     type: 'sub_op',
-                    op: '-', 
                     left_arg: cur_expr, 
                     right_arg: right_expr}
             } else {
@@ -46,13 +44,11 @@ export const getExprAst: ArithmeticActionDict<Expr> = {
             if (ops[i].sourceString == "*") {
                 cur_expr = {
                     type: 'mul_op', 
-                    op: '*', 
                     left_arg: cur_expr, 
                     right_arg: right_expr}
             } else if (ops[i].sourceString == "/") {
                 cur_expr = {
                     type: 'div_op', 
-                    op: '/', 
                     left_arg: cur_expr, 
                     right_arg: right_expr}
             } else {

@@ -5,10 +5,19 @@ export function printExpr(e: Expr, parent_type?: Expr['type'], is_right_arg?: bo
     let result : string = "";
     switch (e.type) {
         case 'mul_op':
+            result = `${printExpr(e.left_arg, e.type, false)} * ${printExpr(e.right_arg, e.type, true)}`;
+            break;
+
         case 'add_op':
+            result = `${printExpr(e.left_arg, e.type, false)} + ${printExpr(e.right_arg, e.type, true)}`;
+            break;
+
         case 'div_op':
+            result = `${printExpr(e.left_arg, e.type, false)} / ${printExpr(e.right_arg, e.type, true)}`;
+            break;
+
         case 'sub_op':
-            result = `${printExpr(e.left_arg, e.type, false)} ${e.op} ${printExpr(e.right_arg, e.type, true)}`;
+            result = `${printExpr(e.left_arg, e.type, false)} - ${printExpr(e.right_arg, e.type, true)}`;
             break;
             
         case 'unary_min':
