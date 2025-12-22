@@ -1,6 +1,6 @@
 import { desiredMark } from '../../desiredMark.json';
 import { addIntGroup, testRe } from '../../lab08/tests/testFilesInFolder';
-import { DesiredMark } from '../../mark';
+import { DesiredMark, toRank } from '../../mark';
 import { 
     readFileSync, 
     readdirSync  } from 'fs';
@@ -9,7 +9,8 @@ import { join as pathJoin, parse as pathParse} from 'path';
 export function testFilesInFolderAsync(folder: string, parseFunc: (name: string, source: string)=>Promise<any>) {
     let files = readdirSync(folder, { withFileTypes: true, recursive: true });
     for (const file of files) {
-        const filePathString = pathJoin(file.parentPath, file.name);
+        const basePath = file.parentPath ?? folder;
+        const filePathString = pathJoin(basePath, file.name);
         const filePath = pathParse(filePathString);
 
         if (!file.isDirectory() && filePath.ext == ".funny") {
@@ -19,11 +20,11 @@ export function testFilesInFolderAsync(folder: string, parseFunc: (name: string,
 
             const processSample = async()=>parseFunc(filePath.name, sample);
             if (m && m.groups) {
-                if (m.groups.mark as DesiredMark > desiredMark)
+                if (toRank(m.groups.mark as DesiredMark) > toRank(desiredMark as DesiredMark))
                     test.skip(name, () => { });
 
                 else if (m.groups.error) {
-                    var e = {};
+                    let e = {};
                     addIntGroup(e, m.groups, 'startLine');
                     addIntGroup(e, m.groups, 'startCol');
                     addIntGroup(e, m.groups, 'endLine');
