@@ -50,7 +50,7 @@ function substitute(expr: Expr, pattern: Expr, replacement: Expr): Expr | null {
     switch (expr.type) {
         case 'number':
         case 'variable':
-            return null; // No substitution occurred
+            return null;
         
         case 'unary_min':
             const newArg = substitute(expr.arg, pattern, replacement);
@@ -79,60 +79,78 @@ function substitute(expr: Expr, pattern: Expr, replacement: Expr): Expr | null {
     return null;
 }
 
+// Helper to check if an expression is zero
+function isZero(expr: Expr): boolean {
+    return expr.type === 'number' && expr.value === 0;
+}
 
 export function simplify(expr: Expr, identities: [Expr, Expr][]): Expr {
-    // We need to consider all possible orders of applying identities
-    // This is essentially a search problem
     
-    // Start with a simple approach: try all identities in order, then recursively simplify
-    let bestExpr = copyExpr(expr);
-    let bestCost = cost(bestExpr);
+    // First, recursively simplify sub-expressions
+    let simplified = copyExpr(expr);
     
-    // Try each identity as the first step
-    for (const [pattern, replacement] of identities) {
-        const newExpr = substitute(expr, pattern, replacement);
-        
-        if (newExpr !== null) {
-            // Recursively simplify the result
-            const simplifiedExpr = simplify(newExpr, identities);
-            const newCost = cost(simplifiedExpr);
-            
-            if (newCost < bestCost) {
-                bestExpr = simplifiedExpr;
-                bestCost = newCost;
-            }
-        }
-    }
-    
-    // Also try simplifying sub-expressions first
-    switch (expr.type) {
+    switch (simplified.type) {
         case 'unary_min':
-            const simplifiedArg = simplify(expr.arg, identities);
-            const argCost = cost(simplifiedArg);
-            if (argCost < bestCost) {
-                bestExpr = { type: 'unary_min', arg: simplifiedArg };
-                bestCost = argCost;
-            }
+            simplified = { type: 'unary_min', arg: simplify(simplified.arg, identities) };
             break;
             
         case 'add_op':
         case 'sub_op':
         case 'mul_op':
         case 'div_op':
-            const simplifiedLeft = simplify(expr.left_arg, identities);
-            const simplifiedRight = simplify(expr.right_arg, identities);
-            const childrenCost = cost(simplifiedLeft) + cost(simplifiedRight);
-            
-            if (childrenCost + 1 < bestCost) {
-                bestExpr = {
-                    type: expr.type,
-                    left_arg: simplifiedLeft,
-                    right_arg: simplifiedRight
-                };
-                bestCost = childrenCost + 1;
-            }
+            simplified = {
+                type: simplified.type,
+                left_arg: simplify(simplified.left_arg, identities),
+                right_arg: simplify(simplified.right_arg, identities)
+            };
             break;
     }
     
+    
+    // Now try to apply identities to the simplified expression
+    let bestExpr = simplified;
+    let bestCost = cost(simplified);
+    
+    // Special handling for operations with zero
+    if (simplified.type === 'add_op' || simplified.type === 'sub_op') {
+        if (isZero(simplified.right_arg)) {
+            const newExpr = simplified.left_arg;
+            const newCost = cost(newExpr);
+            if (newCost < bestCost) {
+                bestExpr = copyExpr(newExpr);
+                bestCost = newCost;
+            }
+        }
+    }
+    
+    if (simplified.type === 'mul_op') {
+        // If either side is zero, the result is zero
+        if (isZero(simplified.left_arg) || isZero(simplified.right_arg)) {
+            const zeroExpr = { type: 'number' as const, value: 0 };
+            const zeroCost = cost(zeroExpr);
+            if (zeroCost < bestCost) {
+                bestExpr = zeroExpr;
+                bestCost = zeroCost;
+            }
+        }
+    }
+    
+    // Try each identity
+    for (let i = 0; i < identities.length; i++) {
+        const [pattern, replacement] = identities[i];
+        const newExpr = substitute(simplified, pattern, replacement);
+        
+        if (newExpr !== null) {
+            // Recursively simplify the result
+            const recursivelySimplified = simplify(newExpr, identities);
+            const newCost = cost(recursivelySimplified);
+            
+            if (newCost < bestCost) {
+                bestExpr = recursivelySimplified;
+                bestCost = newCost;
+            }
+        } else {
+        }
+    }
     return bestExpr;
 }
