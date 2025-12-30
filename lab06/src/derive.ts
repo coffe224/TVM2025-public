@@ -2,8 +2,6 @@ import { Expr } from "../../lab04";
 
 export function derive(e: Expr, varName: string): Expr
 {
-    console.log("Entered the derive function with type: " + e.type);
-
     switch(e.type) {
         case 'add_op':
         {
@@ -88,10 +86,8 @@ export function derive(e: Expr, varName: string): Expr
 
         case 'variable':
         {
-            console.log("Varname: " + varName + " | Variable: " + e.value);
             const new_expr : Expr = {type: 'number', value: 0}
             if (e.value == varName) {
-                console.log(e.value);
                 new_expr.value = 1;
             }
             return simplify(new_expr);
@@ -105,7 +101,6 @@ export function derive(e: Expr, varName: string): Expr
 
         case 'number':
         {
-            console.log("Number: " + e.value);
             const new_expr : Expr = {type: 'number', value: 0}
             return simplify(new_expr);
         }

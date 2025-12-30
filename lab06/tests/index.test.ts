@@ -5,14 +5,7 @@ import { compileAndExecute, getVariables } from "../../lab05";
 
 import { derive } from "../src";
 
-// const parseAndDerive = (source: string, varName: string) => derive(parseExpr(source), varName);
-
-const parseAndDerive = (source: string, varName: string) => {
-  const parsedExpr = parseExpr(source);
-  const derivedExpr = derive(parsedExpr, varName);
-  console.log(printExpr(derivedExpr));
-  return derivedExpr;
-};
+const parseAndDerive = (source: string, varName: string) => derive(parseExpr(source), varName);
 
 
 describe("Numerical tests", ()=>{
@@ -50,14 +43,10 @@ describe("Structural tests", ()=>{
 async function deriveAndCalculate(source: string, varName: string, ...args:number[]): Promise<number>
 {
     let expr = parseExpr(source);
-
-    console.log("Original: ", printExpr(expr));
-
     // we will use the original variable list to isolate the user from the 
     // case when some variable(s) disappear after derivation
     // e.g. x + x*y + z |'x yields (1 + y), leaving only one variable.
     let variables = getVariables(expr); 
     let derivative = derive(expr, varName);
-    console.log("Derivative: ", printExpr(derivative));
     return await compileAndExecute(derivative, variables, ...args);
 }

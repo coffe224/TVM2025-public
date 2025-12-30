@@ -163,18 +163,14 @@ function checkFunctionCalls(module: AnnotatedModule) {
         }
     }
 
-    for (const func of module.functions) {
-        console.log(`Checking function: ${func.name}`);
-        
+    for (const func of module.functions) {        
         visitNode(func.body);
         
         if (func.precondition) {
-            console.log(`Checking precondition of ${func.name}`);
             visitNode(func.precondition);
         }
         
         if (func.postcondition) {
-            console.log(`Checking postcondition of ${func.name}`);
             visitNode(func.postcondition);
         }
     }

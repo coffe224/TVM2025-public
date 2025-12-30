@@ -230,11 +230,9 @@ export const getFunnyAst = {
             declared.add(i.name);
         }
 
-        console.log(declared);
         const used_in_body = new Set<string>();
         const parsedStatement = statement.parse() as ast.Statement;
         collectNamesInNode(parsedStatement, used_in_body);
-        console.log(used_in_body);
         for (const name of used_in_body) {
             if (!declared.has(name)) {
                 throw new Error("Function: локальная переменная " + name + " не объявлена");
@@ -461,7 +459,6 @@ export const getFunnyAst = {
 
         if (arrows.sourceString === "->") {
             const right = rest.children[0].children[1].parse();
-            console.log("right", right);
 
             // A -> B === (!A) || B
             const notA = { kind: "not", predicate: left };

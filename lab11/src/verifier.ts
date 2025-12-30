@@ -1,44 +1,8 @@
 import { Context, init, Model, Arith, Bool, Solver } from "z3-solver";
 import { printFuncCall } from "./printFuncCall";
-import {
-    AnnotatedModule,
-    AnnotatedFunctionDef,
-    Formula
-} from "../../lab10";
-import {
-    Module,
-    ParameterDef,
-    Predicate,
-    FunctionDef,
-    Statement,
-    AssignSt,
-    BlockSt,
-    ConditionalSt,
-    LoopSt,
-    FunctionCallSt,
-    LValue,
-    VarLValue,
-    ArrLValue,
-    Expr,
-    FuncCallExpr,
-    ArrAccessExpr,
-    Condition,
-    TrueCond,
-    FalseCond,
-    ComparisonCond,
-    NotCond,
-    AndCond,
-    OrCond,
-    ImpliesCond,
-    ParenCond,
-    Quantifier,
-    FormulaRef,
-    NotPred,
-    AndPred,
-    OrPred,
-    ParenPred,
-    ImpliesPred
-} from "../../lab08";
+import { AnnotatedModule, AnnotatedFunctionDef } from "../../lab10";
+import { Predicate, Statement, AssignSt, BlockSt, ConditionalSt, Expr, ArrAccessExpr, Condition, TrueCond, FalseCond, ComparisonCond, 
+    NotCond, AndCond, OrCond, ImpliesCond, ParenCond, NotPred, AndPred, OrPred, ParenPred, ImpliesPred } from "../../lab08";
 import * as ast from "../../lab04";
 
 let z3: Context<'main'> | null = null;
@@ -176,10 +140,6 @@ function predicateToCondition(pred: Predicate): Condition {
     }
 }
 
-/* =========================
- *  Слабое предусловие (Weakest Precondition)
- * ========================= */
-
 function wpStatement(stmt: Statement, post: Condition): Condition {
     switch (stmt.type) {
         case "assign":
@@ -237,10 +197,6 @@ function wpIf(ifStmt: ConditionalSt, post: Condition): Condition {
         or(condition, elseWP)
     );
 }
-
-/* =========================
- *  Подстановка (для WP)
- * ========================= */
 
 function substCond(cond: Condition, name: string, replacement: Expr): Condition {
     switch (cond.kind) {
@@ -335,9 +291,6 @@ function substExpr(expr: Expr, name: string, replacement: Expr): Expr {
     }
 }
 
-/* =========================
- *  Конвертация в Z3
- * ========================= */
 
 function buildIntEnvironment(Z: Context<'main'>, f: AnnotatedFunctionDef): Map<string, Arith> {
     const env = new Map<string, Arith>();

@@ -112,7 +112,6 @@ function compileExpr(expr: Expr, locals: string[], functionIndexMap: Map<string,
             const arrayAccess = compileLValue(tempLValue, locals, functionIndexMap);
             return arrayAccess.get();
         default:
-            console.log(expr);
             throw new Error(`unknown expr type: ${(expr as any).type}`);
     }
 }
@@ -132,7 +131,6 @@ function compileLValue(lvalue: LValue, locals: string[], functionIndexMap: Map<s
             if (arrayIndex === -1) {
                 throw new Error(`variable '${lvalue.name}' not found in locals`);
             }
-            console.log(`array '${lvalue.name}' found at index ${arrayIndex}`);
             const indexExpr = compileExpr(lvalue.index, locals, functionIndexMap);
 
             const baseAddress = c.get_local(i32, arrayIndex);
@@ -198,7 +196,6 @@ function compileCondition(cond: Condition, locals: string[], functionIndexMap: M
         case "paren":
             return compileCondition(cond.inner, locals, functionIndexMap);
         default:
-            console.log(cond);
             throw new Error(`unknown condition: ${cond.kind}`);
     }
 }
