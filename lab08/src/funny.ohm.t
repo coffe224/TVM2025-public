@@ -1,87 +1,86 @@
-Funny <: Arithmetic {  
-  Module = Function+
-  
-  Function = variable "(" ParameterList ")" 
-             Preopt? 
-             ReturnList
-             Postopt?
-             Useopt?
-             Statement
-  
-  Preopt = "requires" Predicate
-  Postopt = "ensures" Predicate
-  Useopt = ("uses" ParameterList)
-  ParameterList = ListOf<VarDecl, ",">
-  ParameterListNotEmpty = NonemptyListOf<VarDecl, ",">
-  ReturnList = "returns" ParameterListNotEmpty --paramlist 
-  |  "returns" "void" --void
-  
-  VarDecl = variable ":" Type
+Funny <: Arithmetic {
+    Module = Function+
 
-  Type = "int[]" --int_arr
-       | "int" --int
+    Function = variable 
+        "(" ParamList ")" 
+        Preopt? 
+        "returns" ParamListNonEmpty 
+        UsesOpt? 
+        Statement
 
-  Statement = Assignment | Conditional | Loop | Block | Expr ";" --expr
-  
-  Assignment = 
-      | LValue "=" Expr ";"                          -- simple
-      | ArrayAccess "=" Expr ";"                     -- array
-      | ListOf<LValue, ","> "=" FunctionCall ";"  -- tuple
-  
-  LValue = variable
-  
-  Conditional = "if" "(" Condition ")" Statement ("else" Statement)?
-  
-  Loop = "while" "(" Condition ")" 
-         Invariant?
-         Statement
-  Invariant = ("invariant" Predicate)
-  Block = "{" Statement* "}"
-  
-  FunctionCall = variable "(" ArgumentList ")"
-  ArgumentList = ListOf<Expr, ",">
-  
-  ArrayAccess = variable "[" Expr "]"
-  
-  Condition = 
-      | "true" --true
-      | "false" --false
-      | Comparison --comp
-      | "not" Condition --not
-      | Condition "and" Condition --and
-      | Condition "or" Condition --or
-      | Condition "->" Condition --imp
-      | "(" Condition ")" --parent
-  
-  Comparison = 
-      | Expr "==" Expr
-      | Expr "!=" Expr
-      | Expr ">=" Expr
-      | Expr "<=" Expr
-      | Expr ">" Expr
-      | Expr "<" Expr
-  
-  Predicate = 
-  	  | Predicate "->" Predicate --imp
-      | Predicate "or" Predicate --or
-      | Predicate "and" Predicate --and
-      | "not" Predicate --not
-      | Quantifier --quant
-      | FormulaRef --formulaRef
-      | "true" --true
-      | "false" --false
-      | Comparison --comp
-      | "(" Predicate ")" --parent
-  
-  Quantifier = ("forall" | "exists") "(" VarDecl "|" Predicate ")"
-  
-  FormulaRef = variable "(" ParameterList ")"
-  
-  Expr := 
-      | FunctionCall
-      | ArrayAccess
-      | ...                
-  
+    ParamList = ListOf<Param, ",">
+    ParamListNonEmpty = ListOf<Param, ",">
+    Param = variable ":" Type
+    Preopt = "requires" Predicate 
+    UsesOpt = "uses" ParamList 
+
+    Type = "int" "[]" -- array
+        | "int" -- int
+
+    Statement = Assignment
+        | Block
+        | Conditional
+        | While
+        | FunctionCall ";" -- function_call_statement
+
+    Assignment = LValueList "=" ExprList ";"    -- tuple_assignment
+        | LValue "=" Expr ";"                   -- simple_assignment
+    LValueList = ListOf<LValue, ",">
+    ExprList = ListOf<Expr, ",">
+    LValue = variable "[" Expr "]"              -- array_access
+        | variable                               -- variable
+    Block = "{" Statement* "}"
+    Conditional = "if" "(" Condition ")" Statement ("else" Statement)?
+    While = "while" "(" Condition ")" InvariantOpt? Statement
+    InvariantOpt = "invariant" Predicate 
+
+    AtomExpr := FunctionCall
+        | ArrayAccess
+        | ...
+    FunctionCall = variable "(" ArgList ")"
+    ArgList = ListOf<Expr, ",">
+    ArrayAccess = variable "[" Expr "]"
+
+    AndOp<C> = C "and" C
+    OrOp<C> = C "or" C
+    NotOp<C> = "not" C
+    ParenOp<C> = "(" C ")"
+    
+    Condition = ImplyCond
+    ImplyCond = OrCond ("->" ImplyCond)?
+    OrCond = AndCond ("or" AndCond)*
+    AndCond = NotCond ("and" NotCond)*
+    NotCond = ("not")* AtomCond
+
+    AtomCond = "true"           -- true
+        | "false"               -- false
+        | Comparison            -- comparison
+        | "(" Condition ")"     -- paren
+
+    Comparison = Expr "==" Expr                 -- eq
+        | Expr "!=" Expr                        -- neq
+        | Expr ">=" Expr                        -- ge
+        | Expr "<=" Expr                        -- le
+        | Expr ">"  Expr                        -- gt
+        | Expr "<"  Expr                        -- lt
+
+    Predicate = ImplyPred
+    ImplyPred = OrPred ("->" ImplyPred)?
+    OrPred = AndPred ("or" AndPred)*
+    AndPred = NotPred ("and" NotPred)*
+    NotPred = ("not")* AtomPred
+
+    AtomPred = Quantifier     -- quantifier
+        | FormulaRef          -- formula_ref
+        | "true"              -- true
+        | "false"             -- false
+        | Comparison          -- comparison
+        | "(" Predicate ")"   -- paren
+
+    Quantifier = ("forall" | "exists") 
+        "(" Param "|" Predicate ")"
+    FormulaRef = variable "(" ParamList ")"
+
     space := " " | "\t" | "\n" | comment | ...
     comment = "//" (~endOfLine any)* endOfLine
     endOfLine = "\r" | "\n" | "\r\n"

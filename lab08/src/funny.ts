@@ -1,39 +1,35 @@
-import * as arith from "@tvm/lab04";
+import * as arith from "../../lab04";
 
 export interface Module
 {
-    type: 'module';
+    type: "module";
     functions: FunctionDef[]
 }
 
 export interface FunctionDef
 {
-    type: 'func';
+    type: "fun";
     name: string;
     parameters: ParameterDef[];
     returns: ParameterDef[];
     locals: ParameterDef[];
     body: Statement;
-}
-
-export interface VariableType
-{
-    type: "type"
-    name: string
-    isArray : boolean
+    loc?: Location;
 }
 
 export interface ParameterDef
 {
-    type:       "param";
-    name:       string;
-    varType:    VariableType;
+    type: "param";
+    name: string;
+    varType: "int" | "int[]"; 
 }
 
-export type LValue = (SingleLValue | ArrLValue);
+export type Statement = AssignSt | BlockSt | ConditionalSt | LoopSt | FunctionCallSt;
 
-export interface SingleLValue {
-  type: "lsingvar";
+export type LValue = VarLValue | ArrLValue;
+
+export interface VarLValue {
+  type: "lvar";
   name: string;
 }
 
@@ -43,134 +39,164 @@ export interface ArrLValue {
   index: Expr;
 }
 
-// Statements
-
-export type Statement = (AssignmentSt | ConditionalSt | LoopSt | BlockSt);
-
-export interface AssignmentSt {
-    type: "assign_st";
-    left: LValue[];
-    right: Expr[];
-}
-
-export interface ConditionalSt {
-    type: "cond_st";
-    condition: Condition;
-    then: Statement;
-    else: Statement | null;
-}
-
-export interface LoopSt {
-    type: "loop_st";
-    condition: Condition;
-    invariant: Predicate | null;
-    body: Statement;
+export interface AssignSt {
+    type: "assign";
+    targets: LValue[];
+    exprs: Expr[];
+    loc?: Location;
 }
 
 export interface BlockSt {
-    type: "block_st";
+    type: "block";
     stmts: Statement[];
+    loc?: Location;
+}
+export interface ConditionalSt {
+    type: "if";
+    condition: Condition;
+    then: Statement;
+    else: Statement | null;
+    loc?: Location;
 }
 
-export type Expr = (arith.Expr | FuncCallExpr | ArrAccessExpr);
+export interface LoopSt {
+    type: "while";
+    condition: Condition;
+    invariant: Predicate | null;
+    body: Statement;
+    loc?: Location;
+}
+
+export interface FunctionCallSt {
+    type: "funccallstmt";
+    call: FuncCallExpr;
+    loc?: Location;
+}
+
+export type Expr = arith.Expr | FuncCallExpr | ArrAccessExpr;
 
 export interface FuncCallExpr {
     type: "funccall";
     name: string;
-    args: Expr[]; 
+    args: Expr[];
+    loc?: Location;
 }
 
 export interface ArrAccessExpr {
     type: "arraccess";
     name: string;
     index: Expr;
+    loc?: Location;
 }
 
-export type Condition = (True | False | Not | Paren | BinCond | Comp);
+export type Condition = TrueCond | FalseCond | ComparisonCond | NotCond | AndCond | OrCond | ImpliesCond | ParenCond;
 
-export interface True {
-    type: "true";
+export interface TrueCond {
+    kind: "true";
+    loc?: Location;
 }
 
-export interface False {
-    type: "false";
+export interface FalseCond {
+    kind: "false";
+    loc?: Location;
 }
 
-export interface Not {
-    type: "not";
-    condition: Condition;
-}
-
-export interface Paren {
-    type: "paren";
-    inner: Condition;   
-}
-
-export type BinCond = AndCond | OrCond | ImplCond;
-
-export interface AndCond {
-    type: "and";
-    left: Condition;
-    right: Condition;
-}
-
-export interface OrCond {
-    type: "or";
-    left: Condition;
-    right: Condition;
-}
-
-export interface ImplCond {
-    type: "impl";
-    left: Condition;
-    right: Condition;
-}
-
-export interface Comp {
-    type: "comp";
+export interface ComparisonCond {
+    kind: "comparison";
     left: Expr;
     op: "==" | "!=" | ">" | "<" | ">=" | "<=";
     right: Expr;
+    loc?: Location;
 }
 
-// Предикаты и формулы
+export interface NotCond {
+    kind: "not";
+    condition: Condition;
+    loc?: Location;
+}
 
-export type Predicate = (Quantifier | FormulaRef | False | True | Comp | NotPred | BinPred | ParenPred);
+export interface AndCond {
+    kind: "and";
+    left: Condition;
+    right: Condition;
+    loc?: Location;
+}
+
+export interface OrCond {
+    kind: "or";
+    left: Condition;
+    right: Condition;
+    loc?: Location;
+}
+
+export interface ImpliesCond {
+    kind: "implies";
+    left: Condition;
+    right: Condition;
+    loc?: Location;
+}
+
+export interface ParenCond {
+    kind: "paren";
+    inner: Condition;
+    loc?: Location;   
+}
+
+export type Predicate = Quantifier | FormulaRef | FalseCond | TrueCond | ComparisonCond | NotPred | AndPred | OrPred | ParenPred | ImpliesPred;
 
 export interface Quantifier {
-    type: "quantifier";
+    kind: "quantifier";
     quant: "forall" | "exists";
     varName: string;
     varType: "int" | "int[]";
     body: Predicate;
+    loc?: Location;
 }
 
 export interface FormulaRef {
-    type: "formula";
+    kind: "formula";
     name: string;
     parameters: ParameterDef[];
+    loc?: Location;
 }
 
 export interface NotPred {
-    type: "not";
+    kind: "not";
     predicate: Predicate;
+    loc?: Location;
 }
 
-export type BinPred = AndPred | OrPred; 
-
 export interface AndPred {
-    type: "and";
+    kind: "and";
     left: Predicate;
     right: Predicate;
+    loc?: Location;
 }
 
 export interface OrPred {
-    type: "or";
+    kind: "or";
     left: Predicate;
     right: Predicate;
+    loc?: Location;
 }
 
 export interface ParenPred {
-    type: "paren";
+    kind: "paren";
     inner: Predicate;
+    loc?: Location;
+}
+
+export interface ImpliesPred {
+    kind: "implies";
+    left: Predicate;
+    right: Predicate;
+    loc?: Location;
+}
+
+export interface Location {
+    file?: string;
+    startLine: number;
+    startCol: number;
+    endLine?: number;
+    endCol?: number;
 }
